@@ -7,8 +7,12 @@ public class playerMain : MonoBehaviour
     static float startingExpPerLevel = 450;
     [SerializeField] public float expRequiredForLevelUp = startingExpPerLevel;
 
-    [SerializeField] float playerHealth = 5f;
-    [SerializeField] float playerStamina = 5f;
+    [SerializeField] float playerHealth = 100f;
+    [SerializeField] float playerMaxHealth = 100f;
+
+    [SerializeField] float playerStamina = 100f;
+    [SerializeField] float playerMaxStamina = 100f;
+
     [SerializeField] float playerEXP = 0;
 
 
@@ -24,7 +28,7 @@ public class playerMain : MonoBehaviour
     private void Update()
     {
         AddExperience(120f);
-        System.Threading.Thread.Sleep(1500);
+        System.Threading.Thread.Sleep(500);
     }
 
     public void AddExperience(float addExp)
@@ -32,10 +36,16 @@ public class playerMain : MonoBehaviour
         if (playerLevel < maxLevel)
         {
             playerEXP += addExp;
-            Debug.Log(addExp + "xp gained!");
+            Debug.LogWarning(addExp + "xp gained!");
 
             CheckXpForLevelUp();
-            Debug.LogWarning("You are now Level: " + playerLevel + " at " + playerEXP + "/" + expRequiredForLevelUp + " exp");
+
+            if (playerLevel < maxLevel)
+            {
+                Debug.Log("You are now Level: " + playerLevel + " at " + playerEXP + "/" + expRequiredForLevelUp + " exp");
+                Debug.Log("Remaining EXP required for next level (" + (playerLevel + 1) + "): " + (expRequiredForLevelUp - playerEXP));
+                Debug.Log("Total EXP required for next level (" + (playerLevel + 1) + "): " + expRequiredForLevelUp + "\n\n\n");
+            }                
         }
         else
         {
@@ -45,12 +55,13 @@ public class playerMain : MonoBehaviour
 
     private void CheckXpForLevelUp()
     {
-        if (playerEXP >= expRequiredForLevelUp)
+        if (playerEXP >= expRequiredForLevelUp && playerLevel < maxLevel)
         {
             playerLevel++;
             playerTotalExp += playerEXP;
+            playerHealth = playerMaxHealth; //reset health on level up
 
-            if(playerEXP > expRequiredForLevelUp) //add remaining EXP to next leve, i.e. +150exp when only 120 is required will still award the extra 30
+            if (playerEXP > expRequiredForLevelUp) //add remaining EXP to next leve, i.e. +150exp when only 120 is required will still award the extra 30
             {
                 playerEXP -= expRequiredForLevelUp; //playerEXP = (150 - 120) = 30
             }
@@ -60,10 +71,16 @@ public class playerMain : MonoBehaviour
             }
                 
             UpdateExpRequirement();
-            Debug.LogAssertion("LEVEL UP!!! YOU ARE NOW LEVEL: " + playerLevel + ", with " + playerEXP + "exp leftover!");
-        }
-        Debug.Log("Remaining EXP required for next level (" + (playerLevel + 1) + "): " + (expRequiredForLevelUp - playerEXP));
-        Debug.Log("Total EXP required for next level (" + (playerLevel + 1) + "): " + expRequiredForLevelUp + "\n\n\n");
+            if (playerLevel < maxLevel)
+            {
+                Debug.LogAssertion("LEVEL UP!!! YOU ARE NOW LEVEL: " + playerLevel + ", with " + playerEXP + "exp leftover!");
+            }
+            else
+            {
+                Debug.LogWarning("CONGRATULATIONS!");
+            }
+                
+        }        
     }
 
     private void UpdateExpRequirement() //450exp per level, + current level * 25 , + current level ^ 3
